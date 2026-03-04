@@ -31,7 +31,7 @@ API simples de autenticação desenvolvida com **FastAPI**, implementando regist
 Clone o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/api-auth-jwt.git
+git clone https://github.com/isaporteela-dev/api-auth-jwt.git
 cd api-auth-jwt
 ```
 

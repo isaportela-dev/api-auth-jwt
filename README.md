@@ -110,7 +110,7 @@ Returns the authenticated user's data.
 ## 👩‍💻 Author
 
 **Isabella Portela**
-Veterinary Medicine graduate | Systems Analysis and Development student
+Veterinary Medicine graduate | Systems Analysis and Development student<br>
 Full Stack Developer (Backend focused) in training (Python & Java)
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Isabella%20Portela-blue?style=flat&logo=linkedin)](https://linkedin.com/in/isabellarportela)

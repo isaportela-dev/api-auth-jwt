@@ -1,111 +1,117 @@
-# 🔐 API de Autenticação com JWT (FastAPI)
+# 🔐 JWT Authentication API (FastAPI)
 
-API simples de autenticação desenvolvida com **FastAPI**, implementando registro de usuários, login e autenticação com **JWT (JSON Web Token)**.
+<!-- API de autenticação profissional com FastAPI, PostgreSQL e Docker -->
 
----
-
-## 🚀 Funcionalidades
-
-- Registro de usuário
-- Login com geração de token JWT
-- Autenticação usando OAuth2
-- Rota protegida (`/profile`)
-- Documentação automática com Swagger
+A production-ready authentication API built with **FastAPI**, implementing user registration, login, and route protection using **JWT (JSON Web Tokens)** and **OAuth2**. Designed with a layered architecture, containerized with Docker, and backed by a real PostgreSQL database.
 
 ---
 
-## 🛠 Tecnologias utilizadas
+## 🚀 Features
 
-- Python
-- FastAPI
-- Uvicorn
-- Pydantic
-- Passlib
-- Python-Jose (JWT)
-- OAuth2PasswordBearer
+- User registration with secure password hashing (PBKDF2)
+- Login with JWT token generation
+- OAuth2 authentication flow
+- Protected route (`/profile`) with token validation
+- Layered architecture (routers, services, schemas, models)
+- PostgreSQL database with SQLAlchemy ORM
+- Containerized with Docker and docker-compose
+- Auto-generated API documentation with Swagger UI
 
 ---
 
-## 📦 Instalação
+## 🛠 Tech Stack
 
-Clone o repositório:
+| Technology | Purpose |
+|---|---|
+| Python | Main language |
+| FastAPI | Web framework |
+| PostgreSQL | Relational database |
+| SQLAlchemy | ORM |
+| Alembic | Database migrations |
+| Docker & docker-compose | Containerization |
+| Python-Jose | JWT encoding/decoding |
+| Passlib (PBKDF2) | Password hashing |
+| Uvicorn | ASGI server |
 
+---
+
+## 📁 Project Structure
+
+<!-- Arquitetura em camadas — cada arquivo tem uma única responsabilidade -->
+```
+api-auth-jwt/
+├── app/
+│   ├── main.py              # App entry point
+│   ├── core/
+│   │   ├── database.py      # Database connection and session
+│   │   └── security.py      # JWT and password hashing
+│   ├── models/
+│   │   └── user.py          # SQLAlchemy User model
+│   ├── schemas/
+│   │   └── user.py          # Pydantic schemas
+│   ├── routers/
+│   │   └── auth.py          # Route definitions
+│   └── services/
+│       └── auth.py          # Business logic
+├── migrations/              # Alembic migrations
+├── Dockerfile
+├── docker-compose.yml
+└── requirements.txt
+```
+
+---
+
+## ▶️ Running the project
+
+<!-- A forma mais fácil de rodar — um único comando sobe tudo -->
+
+Make sure you have [Docker](https://www.docker.com/) installed, then run:
 ```bash
-git clone https://github.com/isaportela-dev/api-auth-jwt.git
-cd api-auth-jwt
+docker-compose up --build
 ```
 
-Instale as dependências:
+This will start both the API and the PostgreSQL database automatically.
 
-```bash
-pip install -r requirements.txt
+Access the API documentation at:
 ```
-
----
-
-## ▶️ Rodando o projeto
-
-Inicie o servidor:
-
-```bash
-python -m uvicorn app:app --reload --port 8001
-```
-
-Acesse a documentação da API:
-
-```
-http://127.0.0.1:8001/docs
+http://127.0.0.1:8000/docs
 ```
 
 ---
 
-## 🔑 Fluxo de autenticação
+## 🔑 Authentication Flow
 
-### Registrar usuário
+<!-- Fluxo completo de autenticação -->
 
+### 1. Register a user
 **POST /register**
-
 ```json
 {
-  "username": "isa",
-  "password": "123"
+  "username": "isabella",
+  "password": "yourpassword"
 }
 ```
 
-### Login
-
+### 2. Login
 **POST /login**
 
-Retorna um token JWT.
+Returns a JWT access token.
 
-### Autorizar
+### 3. Authorize
+Click **Authorize 🔒** in Swagger UI and enter your credentials.
 
-Clique em **Authorize 🔒** no Swagger e faça login.
-
-### Acessar rota protegida
-
+### 4. Access protected route
 **GET /profile**
 
-Retorna o usuário autenticado.
+Returns the authenticated user's data.
 
 ---
 
-## 📁 Estrutura do projeto
-
-```
-api-auth-jwt
-│
-├── app.py
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 👩‍💻 Autora
+## 👩‍💻 Author
 
 **Isabella Portela**
+Veterinary Medicine graduate | Systems Analysis and Development student
+Full Stack Developer (Backend focused) in training (Python & Java)
 
-Graduada em Medicina Veterinária  
-Estudante de Análise e Desenvolvimento de Sistemas  
-Backend Developer em formação (Python & Java)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Isabella%20Portela-blue?style=flat&logo=linkedin)](https://linkedin.com/in/isabellarportela)
+[![GitHub](https://img.shields.io/badge/GitHub-isaportela--dev-black?style=flat&logo=github)](https://github.com/isaportela-dev)

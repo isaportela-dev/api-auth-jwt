@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:15
+    container_name: api_auth_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: api_auth_jwt
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/auth_db
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

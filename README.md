@@ -109,7 +109,7 @@ Returns the authenticated user's data.
 
 ## 👩‍💻 Author
 
-**Isabella Portela**
+**Isabella Portela**<br>
 Veterinary Medicine graduate | Systems Analysis and Development student<br>
 Full Stack Developer (Backend focused) in training (Python & Java)
 

@@ -1,25 +1,28 @@
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
 from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.user import UserCreate, UserPublic, Token
-
-# "Banco de dados" em memória (por enquanto)
-users_db: dict[str, dict] = {}
+from app.models.user import User
 
 
-def register_user(user: UserCreate) -> UserPublic:
-    if user.username in users_db:
+def register_user(user: UserCreate, db: Session) -> UserPublic:
+    existing = db.query(User).filter(User.username == user.username).first()
+    if existing:
         raise HTTPException(status_code=400, detail="Usuário já existe")
 
-    users_db[user.username] = {
-        "username": user.username,
-        "password_hash": hash_password(user.password),
-    }
-    return UserPublic(username=user.username)
+    new_user = User(
+        username=user.username,
+        password_hash=hash_password(user.password),
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return UserPublic(username=new_user.username)
 
 
-def login_user(username: str, password: str) -> Token:
-    db_user = users_db.get(username)
-    if not db_user or not verify_password(password, db_user["password_hash"]):
+def login_user(username: str, password: str, db: Session) -> Token:
+    user = db.query(User).filter(User.username == username).first()
+    if not user or not verify_password(password, user.password_hash):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
     token = create_access_token({"sub": username})

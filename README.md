@@ -9,13 +9,28 @@ A production-ready authentication API built with **FastAPI**, implementing user 
 ## 🚀 Features
 
 - User registration with secure password hashing (PBKDF2)
-- Login with JWT token generation
+- Password strength validation (minimum 8 chars, uppercase, number and special character)
+- Login with JWT access token + refresh token generation
+- Token refresh endpoint — renew access without re-login
 - OAuth2 authentication flow
 - Protected route (`/profile`) with token validation
+- Rate limiting: 5 requests/min on `/login`, 3 requests/min on `/register`
 - Layered architecture (routers, services, schemas, models)
 - PostgreSQL database with SQLAlchemy ORM
 - Containerized with Docker and docker-compose
 - Auto-generated API documentation with Swagger UI
+
+---
+
+## 🔒 Security Practices (OWASP Top 10)
+
+| OWASP | Vulnerability | Mitigation |
+|---|---|---|
+| A01 | Broken Access Control | Protected routes with JWT token validation |
+| A02 | Cryptographic Failures | Passwords hashed with PBKDF2 — never stored in plain text |
+| A03 | Injection | SQLAlchemy ORM with parameterized queries — no raw SQL |
+| A07 | Identification & Authentication Failures | Password strength validation, JWT expiration, refresh token, rate limiting |
+| A05 | Security Misconfiguration | Sensitive data stored in environment variables via python-dotenv |
 
 ---
 

@@ -1,7 +1,6 @@
 from pydantic import BaseModel, field_validator
 import re
 
-
 class UserCreate(BaseModel):
     username: str
     password: str
@@ -15,13 +14,21 @@ class UserCreate(BaseModel):
             raise ValueError("A senha deve conter pelo menos uma letra maiúscula")
         if not re.search(r"\d", v):
             raise ValueError("A senha deve conter pelo menos um número")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
+            raise ValueError("A senha deve conter pelo menos um caractere especial")
         return v
-
 
 class UserPublic(BaseModel):
     username: str
 
-
 class Token(BaseModel):
     access_token: str
+    token_type: str = "bearer"
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+class TokenFull(BaseModel):
+    access_token: str
+    refresh_token: str
     token_type: str = "bearer"

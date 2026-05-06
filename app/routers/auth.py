@@ -6,8 +6,8 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from app.core.security import SECRET_KEY, ALGORITHM
 from app.core.database import get_db
-from app.schemas.user import UserCreate, UserPublic, Token
-from app.services.auth import register_user, login_user
+from app.schemas.user import UserCreate, UserPublic, Token, TokenFull, RefreshTokenRequest
+from app.services.auth import register_user, login_user, refresh_access_token
 from app.models.user import User
 
 router = APIRouter()
@@ -33,14 +33,20 @@ def get_current_user(
 
 
 @router.post("/register", response_model=UserPublic, status_code=201)
-def register(user: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+def register(request: Request, user: UserCreate, db: Session = Depends(get_db)):
     return register_user(user, db)
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=TokenFull)
 @limiter.limit("5/minute")
 def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     return login_user(form_data.username, form_data.password, db)
+
+@router.post("/refresh", response_model=Token)
+@limiter.limit("10/minute")
+def refresh(request: Request, refresh_request: RefreshTokenRequest):
+    return refresh_access_token(refresh_request)
 
 
 @router.get("/profile", response_model=UserPublic)

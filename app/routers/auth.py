@@ -7,18 +7,19 @@ from slowapi.util import get_remote_address
 from app.core.security import SECRET_KEY, ALGORITHM
 from app.core.database import get_db
 from app.schemas.user import UserCreate, UserPublic, Token, TokenFull, RefreshTokenRequest
-from app.services.auth import register_user, login_user, refresh_access_token
+from app.services.auth import register_user, login_user, refresh_access_token, logout_user, is_token_blacklisted
 from app.models.user import User
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> UserPublic:
+    if is_token_blacklisted(token, db):
+        raise HTTPException(status_code=401, detail="Token revogado")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str | None = payload.get("sub")
@@ -31,12 +32,10 @@ def get_current_user(
     except JWTError:
         raise HTTPException(status_code=401, detail="Token inválido")
 
-
 @router.post("/register", response_model=UserPublic, status_code=201)
 @limiter.limit("3/minute")
 def register(request: Request, user: UserCreate, db: Session = Depends(get_db)):
     return register_user(user, db)
-
 
 @router.post("/login", response_model=TokenFull)
 @limiter.limit("5/minute")
@@ -48,6 +47,9 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
 def refresh(request: Request, refresh_request: RefreshTokenRequest):
     return refresh_access_token(refresh_request)
 
+@router.post("/logout")
+def logout(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    return logout_user(token, db)
 
 @router.get("/profile", response_model=UserPublic)
 def profile(current_user: UserPublic = Depends(get_current_user)):

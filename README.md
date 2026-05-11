@@ -19,6 +19,9 @@ A production-ready authentication API built with **FastAPI**, implementing user 
 - PostgreSQL database with SQLAlchemy ORM
 - Containerized with Docker and docker-compose
 - Auto-generated API documentation with Swagger UI
+- Token blacklist — logout invalidates the token immediately
+- Security headers middleware (X-Frame-Options, X-Content-Type-Options, HSTS, CSP)
+- Automated tests with pytest — 10 tests covering auth flow, security and edge cases
 
 ---
 
@@ -31,6 +34,8 @@ A production-ready authentication API built with **FastAPI**, implementing user 
 | A03 | Injection | SQLAlchemy ORM with parameterized queries — no raw SQL |
 | A07 | Identification & Authentication Failures | Password strength validation, JWT expiration, refresh token, rate limiting |
 | A05 | Security Misconfiguration | Sensitive data stored in environment variables via python-dotenv |
+| A01 | Broken Access Control | Protected routes with JWT + token blacklist on logout |
+| A08 | Security Misconfiguration | Security headers via middleware (HSTS, CSP, X-Frame-Options) |
 
 ---
 
@@ -120,13 +125,18 @@ Click **Authorize 🔒** in Swagger UI and enter your credentials.
 
 Returns the authenticated user's data.
 
+### 5. Logout
+**POST /logout**
+Invalidates the current token — added to blacklist immediately.
+
+### 6. Refresh token
+**POST /refresh**
+Renews the access token using a valid refresh token.
+
 ---
 
 ## 👩‍💻 Author
 
-**Isabella Portela**<br>
-Veterinary Medicine graduate | Systems Analysis and Development student<br>
-Full Stack Developer (Backend focused) in training (Python & Java)
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Isabella%20Portela-blue?style=flat&logo=linkedin)](https://linkedin.com/in/isabellarportela)
-[![GitHub](https://img.shields.io/badge/GitHub-isaportela--dev-black?style=flat&logo=github)](https://github.com/isaportela-dev)
+**Isabella Portela**
+Desenvolvedora Full Stack | Python · FastAPI · Java · Spring Boot
+[LinkedIn](https://linkedin.com/in/isabellarportela) · [GitHub](https://github.com/isaportela-dev)

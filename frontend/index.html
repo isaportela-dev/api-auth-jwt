@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JWT Auth // SECURE ACCESS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green: #00ff88;
+      --green-dim: #00cc66;
+      --green-dark: #003322;
+      --red: #ff3366;
+      --yellow: #ffcc00;
+      --bg: #050f0a;
+      --bg2: #0a1a10;
+      --border: #00ff8844;
+      --text: #a0ffcc;
+      --mono: 'Share Tech Mono', monospace;
+      --display: 'Orbitron', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Scanlines */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.15) 2px,
+        rgba(0,0,0,0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Grid bg */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      font-family: var(--display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 6px;
+      color: var(--green-dim);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(22px, 5vw, 32px);
+      font-weight: 900;
+      color: var(--green);
+      text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,255,136,0.3);
+      letter-spacing: 2px;
+      line-height: 1.2;
+    }
+
+    .tagline {
+      font-size: 11px;
+      color: #44aa77;
+      letter-spacing: 3px;
+      margin-top: 10px;
+      text-transform: uppercase;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      margin: 16px 0;
+      opacity: 0.4;
+    }
+
+    /* Terminal log */
+    .terminal-log {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 16px;
+      margin-bottom: 32px;
+      font-size: 12px;
+      min-height: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .terminal-log::before {
+      content: '> SYSTEM';
+      position: absolute;
+      top: 4px;
+      right: 8px;
+      font-size: 9px;
+      color: #226644;
+      letter-spacing: 2px;
+    }
+
+    #log-text {
+      color: var(--green);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: var(--green);
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 24px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      background: var(--bg2);
+      border: 1px solid #1a3a2a;
+      color: #44aa77;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .tab:hover { border-color: var(--green); color: var(--green); }
+
+    .tab.active {
+      background: var(--green-dark);
+      border-color: var(--green);
+      color: var(--green);
+      text-shadow: 0 0 8px var(--green);
+    }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Form */
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #44aa77;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid #1a3a2a;
+      border-radius: 2px;
+      padding: 12px 14px;
+      color: var(--green);
+      font-family: var(--mono);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 12px rgba(0,255,136,0.15), inset 0 0 8px rgba(0,255,136,0.05);
+    }
+
+    input::placeholder { color: #2a6644; }
+
+    /* Password strength */
+    .strength-bar {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      height: 3px;
+    }
+
+    .strength-seg {
+      flex: 1;
+      background: #1a3a2a;
+      border-radius: 2px;
+      transition: background 0.3s;
+    }
+
+    .strength-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      margin-top: 4px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-family: var(--display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--green);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: -1;
+    }
+
+    .btn:hover {
+      color: var(--bg);
+      text-shadow: none;
+      box-shadow: 0 0 20px rgba(0,255,136,0.4);
+    }
+
+    .btn:hover::before { transform: translateX(0); }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn:disabled::before { display: none; }
+
+    /* Profile panel */
+    .profile-box {
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      border-radius: 4px;
+      padding: 28px 24px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .profile-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 0 10px var(--green));
+    }
+
+    .profile-username {
+      font-family: var(--display);
+      font-size: 18px;
+      color: var(--green);
+      text-shadow: 0 0 10px rgba(0,255,136,0.5);
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    .profile-status {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--green-dim);
+      text-transform: uppercase;
+    }
+
+    .token-display {
+      background: #020a06;
+      border: 1px solid #0a2a15;
+      border-radius: 2px;
+      padding: 12px;
+      font-size: 10px;
+      color: #336644;
+      word-break: break-all;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .token-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: #336644;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .btn-danger {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn-danger::before { background: var(--red); }
+    .btn-danger:hover { color: white; box-shadow: 0 0 20px rgba(255,51,102,0.4); }
+
+    /* Alert */
+    .alert {
+      padding: 10px 14px;
+      border-radius: 2px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+      display: none;
+    }
+
+    .alert.show { display: block; animation: fadeIn 0.2s; }
+    .alert.error { border: 1px solid var(--red); color: var(--red); background: rgba(255,51,102,0.05); }
+    .alert.success { border: 1px solid var(--green); color: var(--green); background: rgba(0,255,136,0.05); }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 10px;
+      color: #224433;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    footer a { color: #336644; text-decoration: none; }
+    footer a:hover { color: var(--green); }
+
+    /* Glitch on title */
+    @keyframes glitch {
+      0%, 100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,255,136,0.3); }
+      92% { text-shadow: -2px 0 var(--red), 2px 0 #00ffff, 0 0 20px var(--green); }
+      94% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,255,136,0.3); }
+      96% { text-shadow: 2px 0 var(--red), -2px 0 #00ffff, 0 0 20px var(--green); }
+    }
+
+    h1 { animation: glitch 5s infinite; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">FastAPI // JWT Auth</div>
+    <h1>SECURE ACCESS</h1>
+    <div class="tagline">Authentication System v1.0</div>
+    <div class="divider"></div>
+  </header>
+
+  <div class="terminal-log">
+    <div id="log-text"></div><span class="cursor"></span>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="switchTab('login')">// Login</button>
+    <button class="tab" onclick="switchTab('register')">// Register</button>
+    <button class="tab" id="tab-profile" onclick="switchTab('profile')" style="display:none">// Profile</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="panel active" id="panel-login">
+    <div class="alert" id="login-alert"></div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="enter username" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="enter password"/>
+    </div>
+    <button class="btn" onclick="doLogin()">[ AUTHENTICATE ]</button>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="panel" id="panel-register">
+    <div class="alert" id="reg-alert"></div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="reg-user" placeholder="choose username" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="reg-pass" placeholder="min 8 chars, A-Z, 0-9, !@#" oninput="checkStrength(this.value)"/>
+      <div class="strength-bar">
+        <div class="strength-seg" id="s1"></div>
+        <div class="strength-seg" id="s2"></div>
+        <div class="strength-seg" id="s3"></div>
+        <div class="strength-seg" id="s4"></div>
+      </div>
+      <div class="strength-label" id="strength-label" style="color:#2a6644">// awaiting input</div>
+    </div>
+    <button class="btn" onclick="doRegister()">[ CREATE ACCOUNT ]</button>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="panel" id="panel-profile">
+    <div class="profile-box">
+      <div class="profile-icon">⬡</div>
+      <div class="profile-username" id="profile-name">—</div>
+      <div class="profile-status">● ACCESS GRANTED</div>
+    </div>
+    <div class="token-label">// access token</div>
+    <div class="token-display" id="token-display">—</div>
+    <button class="btn btn-danger" onclick="doLogout()">[ TERMINATE SESSION ]</button>
+  </div>
+
+  <footer>
+    <a href="http://127.0.0.1:8000/docs" target="_blank">// swagger docs</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/isaportela-dev/api-auth-jwt" target="_blank">// github</a>
+  </footer>
+
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:8000';
+  let accessToken = null;
+
+  // Terminal log
+  const logEl = document.getElementById('log-text');
+  function log(msg, type = 'info') {
+    const colors = { info: '#00cc66', error: '#ff3366', success: '#00ff88', warn: '#ffcc00' };
+    const prefix = { info: '>', error: '!', success: '✓', warn: '~' }[type];
+    logEl.innerHTML += `<span style="color:${colors[type]}">${prefix} ${msg}\n</span>`;
+    logEl.parentElement.scrollTop = logEl.parentElement.scrollHeight;
+  }
+
+  // Boot sequence
+  const bootMsgs = [
+    ['SYSTEM INIT...', 'info'],
+    ['JWT MODULE LOADED', 'info'],
+    ['DATABASE CONNECTION OK', 'success'],
+    ['AWAITING CREDENTIALS', 'warn'],
+  ];
+  let i = 0;
+  function boot() {
+    if (i < bootMsgs.length) {
+      log(...bootMsgs[i++]);
+      setTimeout(boot, 400);
+    }
+  }
+  boot();
+
+  // Tab switch
+  function switchTab(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(t => { if (t.textContent.toLowerCase().includes(name)) t.classList.add('active'); });
+  }
+
+  // Alert
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'alert show ' + type;
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  // Password strength
+  function checkStrength(v) {
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/\d/.test(v)) score++;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(v)) score++;
+
+    const segs = ['s1','s2','s3','s4'];
+    const colors = ['#ff3366','#ffcc00','#00cc66','#00ff88'];
+    const labels = ['// too weak','// getting there','// almost','// strong'];
+    segs.forEach((id, idx) => {
+      document.getElementById(id).style.background = idx < score ? colors[score-1] : '#1a3a2a';
+    });
+    const lbl = document.getElementById('strength-label');
+    lbl.textContent = v.length === 0 ? '// awaiting input' : labels[score-1] || '// too weak';
+    lbl.style.color = v.length === 0 ? '#2a6644' : colors[score-1] || colors[0];
+  }
+
+  // Register
+  async function doRegister() {
+    const username = document.getElementById('reg-user').value.trim();
+    const password = document.getElementById('reg-pass').value;
+    if (!username || !password) { showAlert('reg-alert', '! fields required', 'error'); return; }
+    log(`REGISTER ATTEMPT: ${username}`, 'info');
+    try {
+      const res = await fetch(`${API}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        log(`ACCOUNT CREATED: ${username}`, 'success');
+        showAlert('reg-alert', '✓ account created — proceed to login', 'success');
+        document.getElementById('reg-user').value = '';
+        document.getElementById('reg-pass').value = '';
+        checkStrength('');
+        setTimeout(() => switchTab('login'), 1500);
+      } else {
+        const msg = data.detail?.[0]?.msg || data.detail || 'error';
+        log(`REGISTER FAILED: ${msg}`, 'error');
+        showAlert('reg-alert', '! ' + msg, 'error');
+      }
+    } catch(e) {
+      log('CONNECTION ERROR', 'error');
+      showAlert('reg-alert', '! cannot connect to API', 'error');
+    }
+  }
+
+  // Login
+  async function doLogin() {
+    const username = document.getElementById('login-user').value.trim();
+    const password = document.getElementById('login-pass').value;
+    if (!username || !password) { showAlert('login-alert', '! fields required', 'error'); return; }
+    log(`AUTH REQUEST: ${username}`, 'info');
+    try {
+      const body = new URLSearchParams({ username, password });
+      const res = await fetch(`${API}/login`, { method: 'POST', body });
+      const data = await res.json();
+      if (res.ok) {
+        accessToken = data.access_token;
+        log(`ACCESS GRANTED: ${username}`, 'success');
+        log(`TOKEN ISSUED`, 'success');
+        document.getElementById('profile-name').textContent = username.toUpperCase();
+        document.getElementById('token-display').textContent = accessToken;
+        document.getElementById('tab-profile').style.display = 'block';
+        switchTab('profile');
+      } else {
+        log(`AUTH FAILED: ${data.detail || 'invalid credentials'}`, 'error');
+        showAlert('login-alert', '! ' + (data.detail || 'invalid credentials'), 'error');
+      }
+    } catch(e) {
+      log('CONNECTION ERROR', 'error');
+      showAlert('login-alert', '! cannot connect to API', 'error');
+    }
+  }
+
+  // Logout
+  async function doLogout() {
+    log('TERMINATING SESSION...', 'warn');
+    try {
+      await fetch(`${API}/logout`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+    } catch(e) {}
+    accessToken = null;
+    log('SESSION TERMINATED — TOKEN BLACKLISTED', 'error');
+    document.getElementById('tab-profile').style.display = 'none';
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+    switchTab('login');
+  }
+</script>
+</body>
+</html>

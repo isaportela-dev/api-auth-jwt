@@ -19,6 +19,7 @@ A production-ready authentication API built with **FastAPI**, implementing user 
 - PostgreSQL database with SQLAlchemy ORM
 - Containerized with Docker and docker-compose
 - Auto-generated API documentation with Swagger UI
+- Cyber-styled frontend (HTML/CSS/JS) with login, register and profile screens
 - Token blacklist — logout invalidates the token immediately
 - Security headers middleware (X-Frame-Options, X-Content-Type-Options, HSTS, CSP)
 - Automated tests with pytest — 10 tests covering auth flow, security and edge cases
@@ -29,13 +30,12 @@ A production-ready authentication API built with **FastAPI**, implementing user 
 
 | OWASP | Vulnerability | Mitigation |
 |---|---|---|
-| A01 | Broken Access Control | Protected routes with JWT token validation |
+| A01 | Broken Access Control | Protected routes with JWT + token blacklist on logout |
 | A02 | Cryptographic Failures | Passwords hashed with PBKDF2 — never stored in plain text |
 | A03 | Injection | SQLAlchemy ORM with parameterized queries — no raw SQL |
-| A07 | Identification & Authentication Failures | Password strength validation, JWT expiration, refresh token, rate limiting |
 | A05 | Security Misconfiguration | Sensitive data stored in environment variables via python-dotenv |
-| A01 | Broken Access Control | Protected routes with JWT + token blacklist on logout |
-| A08 | Security Misconfiguration | Security headers via middleware (HSTS, CSP, X-Frame-Options) |
+| A07 | Identification & Authentication Failures | Password strength validation, JWT expiration, refresh token, rate limiting |
+| A08 | Software & Data Integrity | Security headers via middleware (HSTS, CSP, X-Frame-Options) |
 
 ---
 
@@ -52,6 +52,9 @@ A production-ready authentication API built with **FastAPI**, implementing user 
 | Python-Jose | JWT encoding/decoding |
 | Passlib (PBKDF2) | Password hashing |
 | Uvicorn | ASGI server |
+| slowapi | Rate limiting |
+| pytest + httpx | Automated testing |
+| HTML / CSS / JS | Frontend interface |
 
 ---
 
@@ -132,6 +135,18 @@ Invalidates the current token — added to blacklist immediately.
 ### 6. Refresh token
 **POST /refresh**
 Renews the access token using a valid refresh token.
+
+---
+
+## 🖥 Frontend
+
+Open `frontend/index.html` in your browser with the API running locally.
+
+Features:
+- Login and register forms with real-time password strength indicator
+- Profile screen with token display
+- Logout with immediate token blacklisting
+- Cyber aesthetic with scanlines, glitch effects and terminal log
 
 ---
 
